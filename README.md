@@ -5,14 +5,17 @@ use MP3TAG (https://www.mp3tag.de/) to embed lyrics to songs
 
 ## 1. setup a virtual environment-
 ```bash
-python -m venv .venv```
+python -m venv .venv
+```
 
 ```bash
-source .venv/Scripts/activate```
+source .venv/Scripts/activate
+```
 
 ## 2. install required packages
 ``` bash
-pip install -r requirements.txt```
+pip install -r requirements.txt
+```
 
 ## 3. select music directory
 
