@@ -1,0 +1,26 @@
+2026-01-28 10:09:04,876 - INFO - ===== Starting synced lyrics fetcher =====
+2026-01-28 10:09:04,876 - INFO - Music directory: C:\Users\Max\Desktop\music
+2026-01-28 10:09:04,886 - INFO - Found 112 FLAC files
+2026-01-28 10:09:04,901 - INFO - [1/112] Searching: 01 Ed Sheeran - Sapphire.flac
+2026-01-28 10:09:14,572 - INFO - Lyrics found for "Sapphire Ed Sheeran" on Musixmatch
+2026-01-28 10:09:14,572 - INFO - SUCCESS: 01 Ed Sheeran - Sapphire.flac
+2026-01-28 10:09:14,588 - INFO - [2/112] Searching: A.R. Rahman - Suhana Sama.flac
+2026-01-28 10:09:25,366 - ERROR - An error occurred while searching for an LRC on Lrclib
+2026-01-28 10:09:25,367 - ERROR - HTTPSConnectionPool(host='lrclib.net', port=443): Max retries exceeded with url: /api/search?q=Suhana+Sama+A.R.+Rahman (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))
+2026-01-28 10:09:38,560 - INFO - No suitable lyrics found for "Suhana Sama A.R. Rahman" :(
+2026-01-28 10:09:38,576 - INFO - FAILURE: A.R. Rahman - Suhana Sama.flac
+2026-01-28 10:09:38,576 - INFO - [3/112] Searching: A.R. Rahman - Tu Hai.flac
+2026-01-28 10:09:46,178 - ERROR - An error occurred while searching for an LRC on Lrclib
+2026-01-28 10:09:46,194 - ERROR - HTTPSConnectionPool(host='lrclib.net', port=443): Max retries exceeded with url: /api/search?q=Tu+Hai+A.R.+Rahman (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))
+2026-01-28 10:12:50,262 - INFO - ===== Starting synced lyrics fetcher =====
+2026-01-28 10:12:50,264 - INFO - Music directory: C:\Users\Max\Desktop\music
+2026-01-28 10:12:50,267 - INFO - Found 112 FLAC files
+2026-01-28 10:12:50,269 - INFO - [1/112] Searching: 01 Ed Sheeran - Sapphire.flac
+2026-01-28 10:12:57,319 - INFO - Lyrics found for "Sapphire Ed Sheeran" on Musixmatch
+2026-01-28 10:12:57,323 - INFO - SUCCESS: 01 Ed Sheeran - Sapphire.flac
+2026-01-28 10:12:57,327 - INFO - [2/112] Searching: A.R. Rahman - Suhana Sama.flac
+2026-01-28 10:13:06,066 - ERROR - An error occurred while searching for an LRC on Lrclib
+2026-01-28 10:13:06,066 - ERROR - HTTPSConnectionPool(host='lrclib.net', port=443): Max retries exceeded with url: /api/search?q=Suhana+Sama+A.R.+Rahman (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))
+2026-01-28 10:13:16,402 - INFO - No suitable lyrics found for "Suhana Sama A.R. Rahman" :(
+2026-01-28 10:13:16,402 - INFO - FAILURE: A.R. Rahman - Suhana Sama.flac
+2026-01-28 10:13:16,419 - INFO - [3/112] Searching: A.R. Rahman - Tu Hai.flac
