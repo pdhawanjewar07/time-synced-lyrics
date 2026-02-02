@@ -1,11 +1,10 @@
-Currently working on -
-
-
-_____________________________
 To work on -
-1. best lyrics item match - sometimes a bad match is accepted
-2. use relative paths
+
+1. best lyrics item match - sometimes a bad match is accepted 🟡
+2. use relative paths 🟡
 3. use all sources together 🟢
-4. add option to auto embed lyrics to tracks
-5. move config to project root
-6. deep search, if required
+4. add option to auto embed lyrics to tracks 🟡
+5. move config to project root 🟡
+6. deep search, if required 🟡
+7. genius fetch is too slow and has incosistent outputs, find a better way 🟡
+8. if lyris are already embedded, skip the song 🟡

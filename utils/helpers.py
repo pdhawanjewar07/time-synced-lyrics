@@ -163,7 +163,9 @@ def extract_spotify_lyrics(json_data: dict, mode:int=2) -> str|bool:
             synced(mode=2)
             unsynced(mode=2)
 
-    return "\n".join(lrc_lines)
+    lyrics = "\n".join(lrc_lines) + "\n\nSource: MusixMatch via Spotify"
+
+    return lyrics
 
 def extract_lrclib_lyrics(json_data: list[dict], mode: int = 2) -> str|bool:
     """
@@ -195,7 +197,7 @@ def extract_lrclib_lyrics(json_data: list[dict], mode: int = 2) -> str|bool:
             if  synced_lyrics == None:
                 pass
             else:
-                return synced_lyrics
+                return synced_lyrics + "\n\nSource: Lrclib"
 
         return False
 
@@ -212,7 +214,7 @@ def extract_lrclib_lyrics(json_data: list[dict], mode: int = 2) -> str|bool:
             if  unsynced_lyrics == None:
                 pass
             else:
-                return unsynced_lyrics
+                return unsynced_lyrics  + "\n\nSource: Lrclib"
         return False
 
     match mode:

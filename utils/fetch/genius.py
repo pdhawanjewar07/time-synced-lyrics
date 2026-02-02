@@ -40,20 +40,20 @@ def fetch_lyrics(song_path: str) -> str | bool:
     song_url = extract_genius_song_url(json_data=json_response)
     if song_url is False: return False
 
-    # log.debug(song_url)
-    log.debug("visiting url")
+    # print(song_url)
+    print("visiting url")
     st = time.time()
     driver.get(song_url)
     elapsed = time.time() - st
-    log.debug(f"url visited({elapsed:0.2f}s)")
-    log.debug("waiting to find lyrics element")
+    print(f"url visited({elapsed:0.2f}s)")
+    print("waiting to find lyrics element")
     st = time.time()
     lyrics_element = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, GENIUS_LYRICS_ELEMENT_XPATH)))
     elapsed = time.time() - st
-    log.debug(f"element found({elapsed:0.2f}s)")
+    print(f"element found({elapsed:0.2f}s)")
 
-    # log.debug(lyrics_element.text)
-    return lyrics_element.text
+    # print(lyrics_element.text)
+    return lyrics_element.text  + "\n\nSource: Genius"
 
 
 # sawaal abhijeet srivastava (1), urzu urzu durkut (0), aazmale aazmale (1)
