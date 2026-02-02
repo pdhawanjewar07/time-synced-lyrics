@@ -1,5 +1,5 @@
 import requests
-from utils.config import GENIUS_LYRICS_ELEMENT_XPATH
+from config import GENIUS_LYRICS_ELEMENT_XPATH
 from utils.helpers import extract_genius_song_url, build_search_query
 from utils.selenium_startup import get_driver
 from selenium.webdriver.support.ui import WebDriverWait

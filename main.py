@@ -1,5 +1,5 @@
 from utils.helpers import save_lyrics
-from utils.config import AUDIO_EXTENSIONS, MUSIC_DIRECTORY, OUTPUT_DIRECTORY, LYRICS_FETCH_MODE, LYRICS_SOURCES
+from config import AUDIO_EXTENSIONS, MUSIC_DIRECTORY, OUTPUT_DIRECTORY, LYRICS_FETCH_MODE, LYRICS_SOURCES
 from pathlib import Path
 import logging
 from utils.fetch import from_all

@@ -3,7 +3,7 @@ import random
 import re
 from mutagen import File
 import logging
-
+from rapidfuzz import fuzz
 
 # Setup logging
 logging.basicConfig(
@@ -17,32 +17,61 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 log.info("==== New log session was started ====")
 
-def clean_search_query(query:str) -> str:
+def clean_string(raw_string:str) -> str:
     """
-    cleans raw search query
+    regex clean given string
+    
+    :param raw_string: raw string
+    :type raw_string: str
+    :return: a clean string in lowercase
+    :rtype: str
+    
+    """
+    clean_string = raw_string.lower()                         # to lowercase
+    clean_string = re.sub(r"\s*\([^)]*\)", "", clean_string)  # remove anything inside brackets with themselves
+    clean_string = re.sub(r"[^a-z0-9\s]", " ", clean_string)  # remove punctuation
+    clean_string = re.sub(r"\s*Various Interprets", "", clean_string, flags=re.IGNORECASE)  # remove "Various Interprets"
+    clean_string = re.sub(r"\s+", " ", clean_string).strip()  # clean excess whitespace
+    return clean_string
 
-    Args:
-        query: raw search query (string)
+def match_song_metadata(local_song_path:str, received_song_info:str, threshold:float) -> bool:
+    """fuzzy match local and recieved song metadata
 
-    Returns:
-        a clean search query (string)
+    :param local_song_path: local song path
+    :type local_song_path: str
+    :param received_song_info: recieved song complete description as a string
+    :type received_song_info: str
+    :param threshold: [0-100]
+    :type threshold: float
+    :return: True if match is good, otherise False
+    :rtype: bool
     """
 
-    # 1. Replace -, _, and . with space
-    cleaned_query = re.sub(r"[-_.]", " ", query)
+    audio = File(local_song_path, easy=True)
+    if audio is None:
+        raise ValueError("Unsupported or corrupted audio file")
 
-    # 2. Remove all ambiguous symbols
-    cleaned_query = re.sub(r"[^a-zA-Z0-9 ]+", "", cleaned_query)
+    local_song_title:str = clean_string(audio.get("title", [None])[0])
+    local_song_artist:str = clean_string(audio.get("artist", [None])[0])
+    local_song_album:str = clean_string(audio.get("album", [None])[0])
+    received_song_info:str = clean_string(received_song_info)
 
-    # 3. Replace multiple consecutive spaces with a single space
-    cleaned_query = re.sub(r"\s+", " ", cleaned_query).strip()
+    flag = True
+    score_title = fuzz.partial_ratio(local_song_title, received_song_info)
+    if score_title<threshold: flag = False
+    # print(f"score_title: {score_title:0.2f}%")
 
-    # 4. Remove " Various Interprets" from query
-    cleaned_query = re.sub(r"\s*Various Interprets", "", cleaned_query, flags=re.IGNORECASE)
+    # score_artist = fuzz.partial_ratio(local_song_artist, received_song_info)
+    # if score_artist<threshold: flag = False
+    # print(f"score_artist: {score_artist}")
 
-    return cleaned_query
+    score_album = fuzz.partial_ratio(local_song_album, received_song_info)
+    if score_album<threshold: flag = False
+    # print(f"score_album: {score_album:0.2f}%")
+    
+    return flag
 
-def build_search_query(song_path: str, source:int) -> str:
+def build_search_query(song_path: str) -> str:
     """Build a search query string from selected audio tags.
 
     :param song_path: Path to the audio file.
@@ -52,27 +81,20 @@ def build_search_query(song_path: str, source:int) -> str:
     :return: Clean search query
     :rtype: str
     """
-    TAGS_PRIORITY_ORDER = ["title", "artist", "albumartist" "album"]
+    # TAGS_PRIORITY_ORDER = ["title", "artist", "albumartist" "album"]
     # set default tags to include
-    match source:
-        case 0: # musixmatch-via-spotify
-            tags_to_include = ['title', 'artist', 'album']
-        case 1: # lrclib
-            tags_to_include = ['title', 'artist', 'album']
-        case 2: # genius
-            tags_to_include = ['title', 'albumartist']
-        case _: # default
-            tags_to_include = ['title', 'artist', 'album']
-
+    
     audio = File(song_path)
-    raw_query = ""
-    # add to raw_query by priority
-    for tag in tags_to_include:
-        for key, value in audio.tags.items():
-            if key == tag:
-                raw_query += value[0] + " "
+    title:str = audio.tags.get("title", [None])[0]
+    album:str = audio.tags.get("album", [None])[0]
+    artist:str = audio.tags.get("artist", [None])[0]
+    
+    if title in album:  # remove redundant title present in album eg. title artist title+album -> title artist album
+        album = album.replace(title, "")
+    
+    raw_query = f"{title} {artist} {album}"
 
-    clean_query = clean_search_query(query=raw_query)
+    clean_query = clean_string(raw_string=raw_query)
     # log.info(f"QUERY: {clean_query}")
     return clean_query
 
@@ -234,4 +256,11 @@ def extract_lrclib_lyrics(json_data: list[dict], mode: int = 2) -> str|bool:
 
 
 
+
+if __name__ == "__main__":
+    # build_search_query(song_path="C:\\Users\\Max\\Desktop\\music\\found\\Aanchal Tyagi - Dhak Dhak.flac")
+
+    received_song_info = 'Tauba Tauba Salim–Sulaiman, Sonu Nigam, Kunal Ganjawala, Sunidhi Chauhan, Richa Sharma · Kaal (Original Motion Picture Soundtrack) · Song · 2005'
+    flag = match_song_metadata(local_song_path="C:\\Users\\Max\\Desktop\\music\\Sonu Nigam - Tauba Tauba.flac", received_song_info=received_song_info, threshold=70)
+    print(flag)
 

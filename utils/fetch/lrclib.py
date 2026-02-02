@@ -27,7 +27,7 @@ BASE_HEADERS = {
     "Connection": "close",
 }
 _retry = Retry(
-    total=2,
+    total=0,
     backoff_factor=1.5,
     status_forcelist=[500, 502, 503, 504],
     allowed_methods=["GET"],
@@ -73,7 +73,7 @@ def fetch_lyrics(song_path: str, mode:int=2) -> str | bool:
 
     human_delay()
 
-    search_query = build_search_query(song_path=song_path, source=1)
+    search_query = build_search_query(song_path=song_path)
 
     try:
         response = _session.get(
@@ -115,7 +115,13 @@ def fetch_lyrics(song_path: str, mode:int=2) -> str | bool:
 
     lyrics = extract_lrclib_lyrics(json_data=data, mode=mode)
     if lyrics:
-        log.info("SUCCESS - LrcLib: lyrics found")
+        if mode == 1:
+            log.info("SUCCESS - LrcLib: unsynced lyrics found")
+        else:
+            log.info("SUCCESS - LrcLib: synced lyrics found")
         return lyrics
     else:
-        log.info("FAILURE - LrcLib: lyrics not found")
+        if mode == 1:
+            log.info("FAILURE - LrcLib: unsynced lyrics not found")
+        else:
+            log.info("FAILURE - LrcLib: synced lyrics not found")

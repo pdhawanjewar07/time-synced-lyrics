@@ -4,12 +4,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from syrics.api import Spotify
-from utils.config import SPOTIFY_TRACK_CSS_SELECTOR
-from utils.helpers import extract_spotify_lyrics, build_search_query
+from config import SPOTIFY_TRACK_CSS_SELECTOR
+from utils.helpers import extract_spotify_lyrics, build_search_query, match_song_metadata
 from utils.selenium_startup import get_driver
 from dotenv import load_dotenv
 import os
 import logging
+from bs4 import BeautifulSoup
 
 
 load_dotenv()
@@ -31,7 +32,7 @@ def fetch_lyrics(song_path: str, mode:int) -> str|bool:
         Lyrics(str) if found, otherwise False
     """
 
-    search_query = build_search_query(song_path=song_path, source=0)
+    search_query = build_search_query(song_path=song_path)
 
     url = f"https://open.spotify.com/search/{requests.utils.quote(search_query)}/tracks"
 
@@ -48,6 +49,25 @@ def fetch_lyrics(song_path: str, mode:int) -> str|bool:
 
     track_url = driver.current_url
     # print(track_url)
+
+    #/start For track comparison 
+    resp = requests.get(track_url,headers={"User-Agent": "Mozilla/5.0"},timeout=10)
+    if resp.status_code != 200:
+        pass    # continue any way
+
+    soup = BeautifulSoup(resp.text, "html.parser")
+    def meta(prop):
+        tag = soup.find("meta", property=prop)
+        return tag["content"] if tag else None
+    
+    recieved_song_info = f'{meta("og:title")} {meta("og:description")}'
+    
+    flag = match_song_metadata(local_song_path=song_path, received_song_info=recieved_song_info, threshold=70)
+
+    if flag is False: return False
+
+    #/end For track comparison 
+
     match = re.search(r"/track/([A-Za-z0-9]+)", track_url)
     track_id = match.group(1)
     # print(track_id)
@@ -55,13 +75,20 @@ def fetch_lyrics(song_path: str, mode:int) -> str|bool:
     json_response = sp.get_lyrics(track_id=track_id)
     # print(json_response)
     lyrics = extract_spotify_lyrics(json_data=json_response, mode=mode)
+    # print(lyrics)
     if lyrics:
-        log.info("SUCCESS - MusixMatch: lyrics found")
+        if mode == 1:
+            log.info("SUCCESS - MusixMatch: unsynced lyrics found")
+        else:
+            log.info("SUCCESS - MusixMatch: synced lyrics found")
         return lyrics
-    
-    log.info("FAILURE - MusixMatch: lyrics not found")
+    if mode == 1:
+        log.info("FAILURE - MusixMatch: unsynced lyrics not found")
+    else:
+        log.info("FAILURE - MusixMatch: synced lyrics not found")
     return False
 
 if __name__ == "__main__":
+    # Outstation - Tum Se.flac | Shreya Ghoshal - Cry Cry.flac
     lyrics = fetch_lyrics(song_path="C:\\Users\\Max\\Desktop\\music\\small\\Outstation - Tum Se.flac", mode=0)
-    # print(lyrics)
+    print(lyrics)

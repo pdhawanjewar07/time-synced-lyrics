@@ -1,7 +1,7 @@
 import logging
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-from utils.config import CHROME_BINARY, DRIVER_PATH
+from config import CHROME_BINARY, DRIVER_PATH
 
 log = logging.getLogger(__name__)
 
