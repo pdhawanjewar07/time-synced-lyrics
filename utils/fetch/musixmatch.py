@@ -20,6 +20,11 @@ log = logging.getLogger(__name__)
 sp = Spotify(SPOTIFY_DC_TOKEN)
 driver = get_driver()
 
+cache = {
+    "synced_lyrics":None,
+    "unsynced_lyrics":None
+}
+
 def fetch_lyrics(song_path: str, mode:int) -> str|bool:
     """
     Fetch lyrics json response from musixmatch_via_spotify
@@ -31,6 +36,10 @@ def fetch_lyrics(song_path: str, mode:int) -> str|bool:
     Returns:
         Lyrics(str) if found, otherwise False
     """
+    # if unsynced is requested, return cached if available
+    if cache["unsynced_lyrics"] is not None and mode == 1:
+        log.info("SUCCESS - MusixMatch: unsynced lyrics found")
+        return cache["unsynced_lyrics"]
 
     search_query = build_search_query(song_path=song_path)
 
@@ -64,7 +73,9 @@ def fetch_lyrics(song_path: str, mode:int) -> str|bool:
     
     flag = match_song_metadata(local_song_path=song_path, received_song_info=recieved_song_info, threshold=70)
 
-    if flag is False: return False
+    if flag is False:
+        log.info("FAILURE - MusixMatch: synced/unsynced lyrics not found")
+        return False
 
     #/end For track comparison 
 
@@ -74,21 +85,38 @@ def fetch_lyrics(song_path: str, mode:int) -> str|bool:
 
     json_response = sp.get_lyrics(track_id=track_id)
     # print(json_response)
-    lyrics = extract_spotify_lyrics(json_data=json_response, mode=mode)
+    lyrics = extract_spotify_lyrics(json_data=json_response)
+    cache["synced_lyrics"] = lyrics[0]
+    cache["unsynced_lyrics"] = lyrics[1]
     # print(lyrics)
-    if lyrics:
-        if mode == 1:
-            log.info("SUCCESS - MusixMatch: unsynced lyrics found")
-        else:
-            log.info("SUCCESS - MusixMatch: synced lyrics found")
-        return lyrics
-    if mode == 1:
-        log.info("FAILURE - MusixMatch: unsynced lyrics not found")
-    else:
-        log.info("FAILURE - MusixMatch: synced lyrics not found")
-    return False
+
+    match mode:
+        case 0: # synced only
+            if cache["synced_lyrics"] is not None:
+                log.info("SUCCESS - MusixMatch: synced lyrics found")
+                return cache["synced_lyrics"]
+            else: log.info("FAILURE - MusixMatch: synced lyrics not found")
+        case 1: # unsynced only
+            if cache["unsynced_lyrics"] is not None:
+                log.info("SUCCESS - MusixMatch: unsynced lyrics found")
+                return cache["unsynced_lyrics"]
+            else: log.info("FAILURE - MusixMatch: unsynced lyrics not found")
+        case _: # Default: synced_with_fallback
+            if cache["synced_lyrics"] is not None:
+                log.info("SUCCESS - MusixMatch: synced lyrics found")
+                return cache["synced_lyrics"]
+            elif cache["unsynced_lyrics"] is not None:
+                log.info("SUCCESS - MusixMatch: unsynced lyrics found")
+                return cache["unsynced_lyrics"]
+            else:
+                log.info("FAILURE - MusixMatch: synced/unsynced lyrics not found")
+    return False      
 
 if __name__ == "__main__":
     # Outstation - Tum Se.flac | Shreya Ghoshal - Cry Cry.flac
-    lyrics = fetch_lyrics(song_path="C:\\Users\\Max\\Desktop\\music\\small\\Outstation - Tum Se.flac", mode=0)
-    print(lyrics)
+    output = fetch_lyrics(song_path="C:\\Users\\Max\\Desktop\\music\\small\\Outstation - Tum Se.flac", mode=2)
+    # print(output)
+    if type(output) is str:
+        with open("musixmatch_lyrics.lrc", "w", encoding="utf-8") as f:
+            f.write(output)
+

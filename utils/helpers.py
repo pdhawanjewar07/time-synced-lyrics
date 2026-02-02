@@ -57,17 +57,26 @@ def match_song_metadata(local_song_path:str, received_song_info:str, threshold:f
     received_song_info:str = clean_string(received_song_info)
 
     flag = True
+
     score_title = fuzz.partial_ratio(local_song_title, received_song_info)
     if score_title<threshold: flag = False
-    # print(f"score_title: {score_title:0.2f}%")
+    # print(f"_title_match_score: {score_title:0.2f}%")
+    # print(f"__local_title_info: {local_song_title}")
+    # print(f"received_song_info: {received_song_info}")
+    
 
     # score_artist = fuzz.partial_ratio(local_song_artist, received_song_info)
     # if score_artist<threshold: flag = False
-    # print(f"score_artist: {score_artist}")
+    # print(f"artist_match_score: {score_artist}")
+    # print(f"_local_artist_info: {local_song_title}")
+    # print(f"received_song_info: {received_song_info}")
 
     score_album = fuzz.partial_ratio(local_song_album, received_song_info)
     if score_album<threshold: flag = False
-    # print(f"score_album: {score_album:0.2f}%")
+    # print(f"_album_match_score: {score_album:0.2f}%")
+    # print(f"__local_album_info: {local_song_title}")
+    # print(f"received_song_info: {received_song_info}")
+    
     
     return flag
 
@@ -100,7 +109,9 @@ def build_search_query(song_path: str) -> str:
 
 def human_delay(mean: float = 5.0, jitter: float = 0.3, minimum: float = 3.0):
     delay = random.gauss(mean, mean * jitter)
-    time.sleep(max(minimum, delay))
+    sleep_duration = max(minimum, delay)
+    log.info(f"WAITING - {sleep_duration:0.2f}s before next lrclib request")
+    time.sleep(sleep_duration)
 
 def save_lyrics(lyrics:str, out_dir: str, out_filename:str) -> bool:
     lyrics_file = out_dir + f"\\{out_filename}.lrc"
@@ -132,127 +143,124 @@ def extract_genius_song_url(json_data: dict) -> str|bool:
     except:
         return False
     
-def extract_spotify_lyrics(json_data: dict, mode:int=2) -> str|bool:
+def extract_spotify_lyrics(json_data: dict) -> tuple:
     """
     extract spotify lyrics from json response
     
-    Args:
-        json_data: json response from spotify fetch
-        mode: synced(0), unsynced(1), synced_with_fallback(2)
+    :param json_data: json response from spotify fetch
+    :type json_data: dict
+    :return: (synced_lyrics, unsynced_lyrics) tuple. items can be False.
+    :rtype: str | bool
 
-    Returns:
-        lyrics(str) if found, otherwise False
     """
-    if json_data is None:
-        return False
+    if json_data is None: return False
 
     lyrics = json_data.get("lyrics", {})
     syncType = lyrics.get("syncType", "")
     lines_data = lyrics.get("lines", [])
-    lrc_lines = []
+    lyrics = {
+        "synced_lyrics": "",
+        "unsynced_lyrics": ""
+    }
+    
 
     def ms_to_timestamp(ms: int) -> str:
         minutes = ms // 60000
         seconds = (ms % 60000) / 1000
         return f"{minutes:02d}:{seconds:05.2f}"
 
-    def synced(mode:int):
-        if syncType == "LINE_SYNCED" and mode in (0, 2): # SYNCED
+    def synced()-> str|bool:
+        if syncType == "LINE_SYNCED":
             for entry in lines_data:
                 words = entry.get("words", "").strip()
-                if not words: continue
+                # if not words: continue
                 start_ms = int(entry["startTimeMs"])
                 timestamp = ms_to_timestamp(start_ms)
-                lrc_lines.append(f"[{timestamp}]{words}")
+                lyrics["synced_lyrics"] += f"\n[{timestamp}]{words}"
             return True
         return False
 
-    def unsynced(mode:int):
-        if mode == 1:
+    def unsynced()-> str|bool:
+        if syncType in ["LINE_SYNCED", "UNSYNCED"]:
             for entry in lines_data:
                 words = entry.get("words", "").strip()
-                if not words: continue
-                lrc_lines.append(words)
+                # if not words: continue
+                lyrics["unsynced_lyrics"] += f"\n[{words}"
             return True
         return False
         
-    match mode:
-        case 0: # synced oly
-            synced(mode=0)
-        case 1: # unsynced only
-            unsynced(mode=1)
-        case _: # synced with fallback
-            synced(mode=2)
-            unsynced(mode=2)
+    if synced() is True:
+        lyrics["synced_lyrics"] += "\n\nSource: MusixMatch via Spotify"
+    if unsynced() is True:
+        lyrics["unsynced_lyrics"] += "\n\nSource: MusixMatch via Spotify"
 
-    lyrics = "\n".join(lrc_lines) + "\n\nSource: MusixMatch via Spotify"
+    return (lyrics["synced_lyrics"], lyrics["unsynced_lyrics"])
 
-    return lyrics
-
-def extract_lrclib_lyrics(json_data: list[dict], mode: int = 2) -> str|bool:
+def extract_lrclib_lyrics(json_data: list[dict]) -> tuple:
     """
-    extract lyrics from json data and save to given location
-
-    Args:
-        data: json data(response) recieved from api request
-        out_dir: output location for lyrics
-        out_filename: output file name to be saved as
-        mode: synced(0), unsynced(1), synced_with_fallback(2)
-
-    Returns:
-        lyrics(str) if found, otherwise False.
-    """
-
-    if not json_data:
-        return False
+    extract lyrics and description from json data
     
-    def synced(json_data:list[dict]) -> str|bool:
-        """
-        Returns:
-            synced lyrics(str) if found, otherwise False
-        """
-        if not isinstance(json_data, list):
-            return False
+    :param json_data: Description
+    :type json_data: list[dict]
+    :param mode: synced[0], unsynced[1], synced_with_fallback[2]
+    :type mode: int
+    :return: (synced_lyrics, synced_description, unsynced_lyrics, unsynced_description) tuple.
+    :rtype: tuple
+    
+    """
+    if not isinstance(json_data, list): return False
+    
+    synced_lyrics:str|None = None
+    unsynced_lyrics:str|None = None
+    synced_description:str|bool = None
+    unsynced_description:str|bool = None
 
+    def get_description(item:dict)->str:
+        title = clean_string(item.get("trackName", ""))
+        artist = clean_string(item.get("artistName", ""))
+        album = clean_string(item.get("albumName", ""))
+        return f"{title} {artist} {album}" # description
+
+    def get_synced_description() -> str|bool:
+        """
+        get synced lyrics from lrclib
+        
+        :param json_data: lrclib json data
+        :type json_data: list[dict]
+        :return: synced lyrics & description if found, otherwise False
+        :rtype: tuple | bool
+
+        """
         for item in json_data:
-            synced_lyrics = item.get("syncedLyrics")
-            if  synced_lyrics == None:
-                pass
-            else:
-                return synced_lyrics + "\n\nSource: Lrclib"
-
+            synced_lyrics = item.get("syncedLyrics")    # can be str|None
+            if  synced_lyrics is not None:
+                synced_lyrics = synced_lyrics  + "\n\nSource: Lrclib"
+                synced_description = get_description(item=item)
+                return synced_description
         return False
 
-    def unsynced(json_data:list[dict]) -> str|bool:
+    def get_unsynced_description() -> str|bool:
         """
-        Returns:
-            unsynced lyrics(str) if found, otherwise False
+        get unsynced lyrics from lrclib
+        
+        :param json_data: lrclib json data
+        :type json_data: list[dict]
+        :return: unsynced lyrics & description if found, otherwise False
+        :rtype: tuple | bool
+        
         """
-        if not isinstance(json_data, list):
-            return False
-
         for item in json_data:
-            unsynced_lyrics = item.get("plainLyrics")
-            if  unsynced_lyrics == None:
-                pass
-            else:
-                return unsynced_lyrics  + "\n\nSource: Lrclib"
+            unsynced_lyrics = item.get("plainLyrics")   # can be str|None
+            if  unsynced_lyrics is not None:
+                unsynced_lyrics = unsynced_lyrics  + "\n\nSource: Lrclib"
+                unsynced_description = get_description(item=item)
+                return unsynced_description
         return False
 
-    match mode:
-        case 0: # synced only
-            lyrics = synced(json_data=json_data)
-            return lyrics
-        case 1: # unsynced only
-            lyrics = unsynced(json_data=json_data)
-            return lyrics
-        case _: # synced with fallback to unsynced
-            lyrics = synced(json_data=json_data)
-            if lyrics: return lyrics
-            lyrics = unsynced(json_data=json_data)
-            return lyrics
+    synced_description = get_synced_description()
+    unsynced_description = get_unsynced_description()
 
-    return False
+    return (synced_lyrics, synced_description, unsynced_lyrics, unsynced_description)
 
 
 

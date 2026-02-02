@@ -1,13 +1,16 @@
+Notes -
+🔵 genius is too inconsistent, better not to use 
+
 Currently working on -
-🟡 genius is too inconsistent, better not to use 
+🟡 make lrclib fetch robust to network issues 
+🟡 fix lrclib
 
 To work on -
+🔴 cache unsynced lyrics if found to avoid second fetch
 🔴 apply best coding practices and normalize the codebase
-🔴 best lyrics item match - reject if artist, album doesn't match, title contains other words
 🔴 add option to auto embed lyrics to tracks 
 🔴 deep search, if required 
-🔴 if lyris are already embedded, skip the song 
-🔴 make lrclib fetch robust to network issues 
+🔴 if lyris are already embedded, skip the song
 🔴 add lyricsfind-via-ytmusic/google 
 🔴 reduce some time to display lyric line just before it is heard. currently it lags a bit 
 🔴 switch to official spotify api when developer dashboard app creation becomes available
@@ -16,3 +19,4 @@ Finished working on -
 🟢 use all sources together 
 🟢 use relative paths 
 🟢 move config to project root
+🟢 best lyrics item match - reject if title, artist, album doesn't match
