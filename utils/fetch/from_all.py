@@ -1,5 +1,6 @@
 from utils.fetch.musixmatch import fetch_lyrics as fetch_musixmatch
 from utils.fetch.lrclib import fetch_lyrics as fetch_lrclib
+from utils.fetch.genius import fetch_lyrics as fetch_genius
 import logging
 
 log = logging.getLogger(__name__)
@@ -7,6 +8,7 @@ log = logging.getLogger(__name__)
 SOURCE_FETCHERS = {
     "MusixMatch": fetch_musixmatch,
     "Lrclib": fetch_lrclib,
+    "Genius": fetch_genius
 }
 
 

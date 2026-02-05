@@ -151,6 +151,6 @@ if __name__ == "__main__":
         print(f"{i+1}. {song}")
         synced, unsynced =  fetch_lyrics(song_path=song)
         with open(f"lyrics/{i+1}.lrc", "w", encoding="utf-8") as f:
-            f.write(f"\n{song}\nsynced\n\n{synced}")
-            f.write(f"\n{song}\nunsynced\n\n{unsynced}")
+            f.write(f"{song}\nsynced\n\n{synced}\n")
+            f.write(f"{song}\nunsynced\n\n{unsynced}\n")
 

@@ -1,62 +1,73 @@
-import requests
-from config import GENIUS_LYRICS_ELEMENT_XPATH
-from utils.helpers import extract_genius_song_url, build_search_query
-from utils.selenium_startup import get_driver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-import time
+# unsynced only - community based
+
 from dotenv import load_dotenv
 import os
-import logging
-
-
-log = logging.getLogger(__name__)
+import requests
+import json
+from lxml import html
+from utils.helpers import build_search_query, match_song_metadata, clean_string
 
 load_dotenv()
-GENIUS_AUTH_BEARER_TOKEN = os.getenv("GENIUS_AUTH_BEARER_TOKEN")
-
-driver = get_driver()
-
-def fetch_lyrics(song_path: str) -> str | bool:
-    """fetch unsynced lyrics from genius
-
-    :param song_path: song path
-    :type song_path: str
-    :return: lyrics if found, otherwise False
-    :rtype: str | bool
-    """
-
-    search_query = build_search_query(song_path=song_path, source=2)
-
-    url = "https://api.genius.com/search"
-    headers = {"Authorization": f"Bearer {GENIUS_AUTH_BEARER_TOKEN}"}
-    params = {"q": search_query}
-
-    resp = requests.get(url, headers=headers, params=params, timeout=10)
-    if resp.status_code != 200: return False
-    json_response = resp.json()
-    # get genius song url
-    song_url = extract_genius_song_url(json_data=json_response)
-    if song_url is False: return False
-
-    # print(song_url)
-    print("visiting url")
-    st = time.time()
-    driver.get(song_url)
-    elapsed = time.time() - st
-    print(f"url visited({elapsed:0.2f}s)")
-    print("waiting to find lyrics element")
-    st = time.time()
-    lyrics_element = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, GENIUS_LYRICS_ELEMENT_XPATH)))
-    elapsed = time.time() - st
-    print(f"element found({elapsed:0.2f}s)")
-
-    # print(lyrics_element.text)
-    return lyrics_element.text  + "\n\nSource: Genius"
+GENIUS_ACCESS_TOKEN = os.getenv("GENIUS_ACCESS_TOKEN")
+headers = {"Authorization": GENIUS_ACCESS_TOKEN}
 
 
-# sawaal abhijeet srivastava (1), urzu urzu durkut (0), aazmale aazmale (1)
-# fetch_lyrics(song_path="sawaal abhijeet srivastava")
+def fetch_lyrics(song_path:str)->tuple:
+    search_query = build_search_query(song_path=song_path)
+    search_url = f"https://api.genius.com/search?q={search_query}"
+
+    response = requests.get(url=search_url, headers=headers)
+    json_data = response.json()
+
+    # with open("genius_response.json", "w", encoding="utf-8") as f:
+    #     json.dump(json_data, f, ensure_ascii=False, indent=2)
+
+    response = json_data.get("response", {})
+    hits = response.get("hits", [])
+    try: first_hit = hits[0]    # if no hits return False
+    except: return (False, False)
+    result = first_hit.get("result", {})
+
+    genius_trk_url = result.get("url", "")
+    # print(f"Url: {genius_trk_url}")
+
+    recieved_title = result.get("full_title", "")
+    recieved_artist = result.get("artist_names", "")
+    recieved_song_info = clean_string(f"{recieved_title} {recieved_artist}")
+    # print(f"Description: {recieved_song_info}")
+
+    flag = match_song_metadata(print_match=True, local_song_path=song_path, received_song_info=recieved_song_info, threshold=60)
+    if flag is False: return (False, False)
+
+    response = requests.get(genius_trk_url, timeout=10)
+    tree = html.fromstring(response.text)
+
+    lyrics_xpath = '//*[@id="lyrics-root"]//*[@data-lyrics-container="true"]/text()'
+    text:list = tree.xpath(lyrics_xpath)
+
+    if len(text)>0:
+        lyrics = ""
+        for line in text:
+            lyrics += f"{line}\n"
+        # with open("genius_response.txt", "w", encoding="utf-8") as f:
+        #     for line in text:
+        #         f.write(line + "\n")
+        return (False, lyrics)
+    return (False, False)
 
 
+if __name__ == "__main__":
+    AUDIO_EXTENSIONS = {".mp3", ".flac", ".wav", ".aac", ".m4a",".ogg", ".opus", ".alac", ".aiff"}
+    MUSIC_DIRECTORY = "C:\\Users\\Max\\Desktop\\music\\small"
+    from pathlib import Path
+    music_dir = Path(MUSIC_DIRECTORY)
+    music_files = (
+        f for f in music_dir.iterdir()
+        if f.is_file() and f.suffix.lower() in AUDIO_EXTENSIONS
+    )
+    for i, song_path in enumerate(music_files):
+        print(f"{i+1}. {song_path.stem}")
+        _, unsynced_lyrics = fetch_lyrics(song_path=song_path)
+        with open(f"lyrics/{song_path.stem}.lrc", "w", encoding="utf-8") as f:
+            f.write(f"{song_path.stem}\n\n{unsynced_lyrics}")
+    

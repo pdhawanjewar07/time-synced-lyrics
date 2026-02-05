@@ -118,12 +118,11 @@ if __name__ == "__main__":
         print(f"{i+1}. {song_path.stem}")
         synced, unsynced =  fetch_lyrics(song_path=song_path)
         with open(f"lyrics/{song_path.stem}.lrc", "w", encoding="utf-8") as f:
-            f.write(f"\n{song_path.stem}\nsynced\n\n{synced}")
-            f.write(f"\n{song_path.stem}\nunsynced\n\n{unsynced}")
+            f.write(f"{song_path.stem}\nsynced\n\n{synced}\n")
+            f.write(f"{song_path.stem}\nunsynced\n\n{unsynced}\n")
 
     driver.close()
     clear_profile_cache()
-
 
 
 
