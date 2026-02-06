@@ -16,10 +16,10 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-3. **set preferences in config**
-
-4. **save your auth token(s) in .env**
+3. **save your auth token(s) in .env**
     - GENIUS_ACCESS_TOKEN, SPOTIFY_AUTH
+
+4. **set preferences in config**
 
 5. run **main.py**
 
