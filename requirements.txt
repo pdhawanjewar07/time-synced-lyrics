@@ -2,5 +2,8 @@ mutagen
 requests
 urllib3
 python-dotenv
+lxml
+beautifulsoup4
+rapidfuzz
+playwright
 
-# syrics

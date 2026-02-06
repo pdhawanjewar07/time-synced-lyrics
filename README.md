@@ -1,8 +1,11 @@
-# lyricforge
-fetch synced/unsynced lyrics from musixmatch-via-spotify, lrclib, genius, jiosaavn. 
+<p align="center">
+  <img src="assets/cover.png" alt="lyricsforge cover" width="100%">
+</p>
+
+fetch lyrics from musixmatch-via-spotify, lrclib, genius, jiosaavn. 
 
 ## Steps to follow -
-1. setup a **virtual environment**
+1. **setup a virtual environment**
 ```pwsh
 python -m venv .venv
 ```
@@ -11,15 +14,15 @@ python -m venv .venv
 .venv\Scripts\activate.ps1
 ```
 
-2. **install** required packages
+2. **install required packages**
 ``` pwsh
 pip install -r requirements.txt
 ```
 
-3. save your auth token(s) in **.env** file
-    - GENIUS_ACCESS_TOKEN, SPOTIFY_AUTH
+3. **set preferences in config**
 
-4. set **preferences** in config.py
+4. **save your auth token(s) in .env**
+    - GENIUS_ACCESS_TOKEN, SPOTIFY_AUTH
 
 5. run **main.py**
 
