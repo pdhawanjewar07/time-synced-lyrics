@@ -1,5 +1,5 @@
-# time-synced-lyrics
-fetch lyrics from musixmatch-via-spotify, lrclib, genius, jiosaavn. 
+# lyricforge
+fetch synced/unsynced lyrics from musixmatch-via-spotify, lrclib, genius, jiosaavn. 
 
 ## Steps to follow -
 1. setup a **virtual environment**
