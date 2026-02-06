@@ -1,4 +1,4 @@
-from utils.helpers import save_lyrics, format_time
+from utils.helpers import save_lyrics, format_time, get_songs
 from config import MUSIC_DIRECTORY, OUTPUT_DIRECTORY, LYRICS_FETCH_MODE
 from pathlib import Path
 import logging
@@ -18,12 +18,7 @@ def main() -> int:
     total_processed = 0
     total_found_and_saved = 0
 
-    AUDIO_EXTENSIONS = {".mp3", ".flac", ".wav", ".aac", ".m4a",".ogg", ".opus", ".alac", ".aiff"}
-    music_dir = Path(MUSIC_DIRECTORY)
-    music_files = (
-        f for f in music_dir.iterdir()
-        if f.is_file() and f.suffix.lower() in AUDIO_EXTENSIONS
-    )
+    music_files = get_songs(music_dir=MUSIC_DIRECTORY)
 
     start_time = time.time()
     for song_path in music_files:

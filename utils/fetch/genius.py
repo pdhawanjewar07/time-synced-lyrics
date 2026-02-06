@@ -5,7 +5,7 @@ import os
 import requests
 import json
 from lxml import html
-from utils.helpers import build_search_query, match_song_metadata, clean_string
+from utils.helpers import build_search_query, match_song_metadata, clean_string, get_songs
 
 load_dotenv()
 GENIUS_ACCESS_TOKEN = os.getenv("GENIUS_ACCESS_TOKEN")
@@ -36,7 +36,7 @@ def fetch_lyrics(song_path:str)->tuple:
     recieved_song_info = clean_string(f"{recieved_title} {recieved_artist}")
     # print(f"Description: {recieved_song_info}")
 
-    flag = match_song_metadata(print_match=True, local_song_path=song_path, received_song_info=recieved_song_info, threshold=60)
+    flag = match_song_metadata(print_match=False, threshold=60, local_song_path=song_path, received_song_info=recieved_song_info)
     if flag is False: return (False, False)
 
     response = requests.get(genius_trk_url, timeout=10)
@@ -57,14 +57,9 @@ def fetch_lyrics(song_path:str)->tuple:
 
 
 if __name__ == "__main__":
-    AUDIO_EXTENSIONS = {".mp3", ".flac", ".wav", ".aac", ".m4a",".ogg", ".opus", ".alac", ".aiff"}
     MUSIC_DIRECTORY = "C:\\Users\\Max\\Desktop\\music\\small"
-    from pathlib import Path
-    music_dir = Path(MUSIC_DIRECTORY)
-    music_files = (
-        f for f in music_dir.iterdir()
-        if f.is_file() and f.suffix.lower() in AUDIO_EXTENSIONS
-    )
+    music_files = get_songs(music_dir=MUSIC_DIRECTORY)
+
     for i, song_path in enumerate(music_files):
         print(f"{i+1}. {song_path.stem}")
         _, unsynced_lyrics = fetch_lyrics(song_path=song_path)

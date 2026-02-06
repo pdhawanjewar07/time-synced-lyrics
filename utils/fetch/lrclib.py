@@ -2,7 +2,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import requests
 import random
-from utils.helpers import human_delay, extract_lrclib_lyrics, build_search_query, match_song_metadata
+from utils.helpers import human_delay, extract_lrclib_lyrics, build_search_query, match_song_metadata, get_songs
 import time
 import logging
 import json
@@ -128,8 +128,8 @@ def fetch_lyrics(song_path: str) -> tuple:
     cache["synced_lyrics"], cache["synced_description"], cache["unsynced_lyrics"], cache["unsynced_description"] = lyrics
 
     try:
-        sync_flag = match_song_metadata(local_song_path=song_path, received_song_info=cache["synced_description"], threshold=70)
-        unsync_flag = match_song_metadata(local_song_path=song_path, received_song_info=cache["unsynced_description"], threshold=70)
+        sync_flag = match_song_metadata(print_match=False, threshold=70, local_song_path=song_path, received_song_info=cache["synced_description"])
+        unsync_flag = match_song_metadata(print_match=False, threshold=70, local_song_path=song_path, received_song_info=cache["unsynced_description"])
         if sync_flag is False: cache["synced_lyrics"] = False
         if unsync_flag is False: cache["unsynced_lyrics"] = False
     except:
@@ -141,13 +141,10 @@ def fetch_lyrics(song_path: str) -> tuple:
 
 
 if __name__ == "__main__":
-    SONG_PATHS = [
-        "C:\\Users\\Max\\Desktop\\music\\small\\Sunidhi Chauhan - Tanha Tere Bagair.flac", # musixmatch only
-        "C:\\Users\\Max\\Desktop\\music\\small\\Shreya Ghoshal - Cry Cry.flac", # lrclib only
-        "C:\\Users\\Max\\Desktop\\music\\small\\Outstation - Tum Se.flac", # both
-        "C:\\Users\\Max\\Desktop\\music\\small\\Heil Hitler Kanye West.flac" # none
-        ]
-    for i, song in enumerate(SONG_PATHS):
+    MUSIC_DIRECTORY = "C:\\Users\\Max\\Desktop\\music\\small"
+    music_files = get_songs(music_dir=MUSIC_DIRECTORY)
+
+    for i, song in enumerate(music_files):
         print(f"{i+1}. {song}")
         synced, unsynced =  fetch_lyrics(song_path=song)
         with open(f"lyrics/{i+1}.lrc", "w", encoding="utf-8") as f:

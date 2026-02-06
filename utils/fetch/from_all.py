@@ -1,6 +1,8 @@
 from utils.fetch.musixmatch import fetch_lyrics as fetch_musixmatch
 from utils.fetch.lrclib import fetch_lyrics as fetch_lrclib
 from utils.fetch.genius import fetch_lyrics as fetch_genius
+from utils.fetch.jiosaavn import fetch_lyrics as fetch_jiosaavn
+from utils.helpers import get_songs
 import logging
 
 log = logging.getLogger(__name__)
@@ -8,7 +10,8 @@ log = logging.getLogger(__name__)
 SOURCE_FETCHERS = {
     "MusixMatch": fetch_musixmatch,
     "Lrclib": fetch_lrclib,
-    "Genius": fetch_genius
+    "Genius": fetch_genius,
+    "JioSaavn": fetch_jiosaavn,
 }
 
 
@@ -48,17 +51,12 @@ def fetch_lyrics(song_path:str, fetch_mode:int) -> str|bool:
 
 
 if __name__ == "__main__":
-    SONG_PATHS = [
-        "C:\\Users\\Max\\Desktop\\music\\small\\Sunidhi Chauhan - Tanha Tere Bagair.flac", # musixmatch only
-        "C:\\Users\\Max\\Desktop\\music\\small\\Shreya Ghoshal - Cry Cry.flac", # lrclib only
-        "C:\\Users\\Max\\Desktop\\music\\small\\Outstation - Tum Se.flac", # both
-        "C:\\Users\\Max\\Desktop\\music\\small\\Heil Hitler Kanye West.flac" # none
-        ]
-    for i, song in enumerate(SONG_PATHS):
-        print(f"{i+1}. {song}")
-        lyrics = fetch_lyrics(song_path=song, fetch_mode=2)
+    music_files = get_songs("C:\\Users\\Max\\Desktop\\music\\small")
+    for i, song_path in enumerate(music_files):
+        print(f"{i+1}. {song_path.stem}")
+        lyrics = fetch_lyrics(song_path=song_path, fetch_mode=2)
         if lyrics is not False:
-            with open(f"lyrics/{i+1}.lrc", "w", encoding="utf-8") as f:
-                f.write(song + "\n\n" + lyrics)
+            with open(f"lyrics/{song_path.stem}.lrc", "w", encoding="utf-8") as f:
+                f.write(lyrics)
 
 

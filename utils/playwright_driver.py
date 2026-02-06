@@ -12,7 +12,7 @@ class PlaywrightDriver:
         user_data_dir: str = "playwright_profile",
         headless: bool = True,
         args: Optional[List[str]] = None,
-        timeout_ms: int = 60_000,
+        timeout_ms: int = 30_000,
     ):
         self._playwright = sync_playwright().start()
 

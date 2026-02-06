@@ -1,4 +1,4 @@
-from utils.helpers import extract_spotify_lyrics, build_search_query, match_song_metadata
+from utils.helpers import extract_spotify_lyrics, build_search_query, match_song_metadata, get_songs
 import logging
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
@@ -13,12 +13,12 @@ import json
 
 
 load_dotenv()
-SPOTIFY_AUTH = os.getenv("SPOTIFY_AUTH")
+SPOTIFY_AUTH = os.getenv("SPOTIFY_AUTH_TOKEN")
 # SPOTIFY_DC_TOKEN = os.getenv("SPOTIFY_DC_TOKEN")
 log = logging.getLogger(__name__)
 # sp = Spotify(SPOTIFY_DC_TOKEN)
 
-driver = PlaywrightDriver(headless=True)   # False only for debugging/spotify login
+driver = PlaywrightDriver(headless=False)   # False only for debugging/spotify login
 
 def fetch_lyrics(song_path: str) -> tuple:
     """
@@ -39,11 +39,13 @@ def fetch_lyrics(song_path: str) -> tuple:
     # print(f"______Search Query: {search_query}")
     search_url = f"https://open.spotify.com/search/{search_query}/tracks"
     # print(f"Spotify search url: {search_url}")
-
-    driver.page.goto(search_url)
-    driver.page.wait_for_selector(SPOTIFY_TRACK_CSS_SELECTOR)
-    driver.page.click(SPOTIFY_TRACK_CSS_SELECTOR)
-    driver.page.wait_for_url("**/track/**")
+    try:
+        driver.page.goto(search_url)
+        driver.page.wait_for_selector(SPOTIFY_TRACK_CSS_SELECTOR)
+        driver.page.click(SPOTIFY_TRACK_CSS_SELECTOR)
+        driver.page.wait_for_url("**/track/**")
+    except:
+        log.warning(f"Check your internet speed/connection!")
 
     spotify_track_url = driver.page.url
     # print(f"Spotify _track url: {spotify_track_url}")
@@ -71,7 +73,7 @@ def fetch_lyrics(song_path: str) -> tuple:
     recieved_song_title = meta("og:title")
     recieved_song_description = meta("og:description")
     recieved_song_info = f'{recieved_song_title} {recieved_song_description}'
-    flag = match_song_metadata(print_match=False,local_song_path=song_path, received_song_info=recieved_song_info, threshold=60)
+    flag = match_song_metadata(print_match=True, threshold=60, local_song_path=song_path, received_song_info=recieved_song_info)
     if flag is False: return (False, False)
     #/end For track comparison
 
@@ -105,14 +107,8 @@ def fetch_lyrics(song_path: str) -> tuple:
 
 
 if __name__ == "__main__":
-    AUDIO_EXTENSIONS = {".mp3", ".flac", ".wav", ".aac", ".m4a",".ogg", ".opus", ".alac", ".aiff"}
     MUSIC_DIRECTORY = "C:\\Users\\Max\\Desktop\\music\\small"
-    from pathlib import Path
-    music_dir = Path(MUSIC_DIRECTORY)
-    music_files = (
-        f for f in music_dir.iterdir()
-        if f.is_file() and f.suffix.lower() in AUDIO_EXTENSIONS
-    )
+    music_files = get_songs(music_dir=MUSIC_DIRECTORY)
 
     for i, song_path in enumerate(music_files):
         print(f"{i+1}. {song_path.stem}")

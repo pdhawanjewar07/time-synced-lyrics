@@ -1,13 +1,14 @@
 Notes -
-🔵 no notes
+🔵 even top spotify track can be wrong, switch to official api to match from top "n" tracks
 
 Currently working on -
-
+🟡 automatically grab and cycle spotify auth token every 45 mins.
 
 To work on -
-🔴 apply best coding practices, normalize and optimize the codebase
+🔴 apply best coding practices, normalize and optimize the codebase, add documentation
+🔴 add single source of truth(s)
 🔴 add option to auto embed lyrics to tracks 
-🔴 add source: lyricsfind-via-ytmusic/google
+🔴 add source: lyricfind
 🔴 switch to official spotify api when developer dashboard app creation becomes available(speed up)
 
 Finished working on -
@@ -21,3 +22,4 @@ Finished working on -
 🟢 remove dependency on syrics, grab lyrics network request from spotify network request
 🟢 make lrclib fetch robust to network issues 
 🟢 fix lrclib
+🟢 add source - JioSaavn

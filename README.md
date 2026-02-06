@@ -1,5 +1,5 @@
 # time-synced-lyrics
-fetch lyrics from musixmatch-via-spotify, lrclib, genius. 
+fetch lyrics from musixmatch-via-spotify, lrclib, genius, jiosaavn. 
 
 ## Steps to follow -
 1. **setup a virtual environment**
@@ -18,9 +18,11 @@ pip install -r requirements.txt
 
 3. **set preferences in config**
 
-4. **save your tokens in .env**
+4. **save your auth token(s) in .env**
+    - GENIUS_ACCESS_TOKEN, SPOTIFY_AUTH
 
-5. **run main.py**
+5. run **main.py**
 
 ### Notes -
-1. use MP3TAG (https://www.mp3tag.de/) to embed lyrics to songs
+1. you can use MP3TAG (https://www.mp3tag.de/) to embed lyrics to songs.
+2. you can check logs in **main.log** file.

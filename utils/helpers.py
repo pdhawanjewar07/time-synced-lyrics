@@ -3,6 +3,8 @@ import re
 from mutagen import File
 import logging
 from rapidfuzz import fuzz
+from pathlib import Path
+
 
 # Setup logging
 logging.basicConfig(
@@ -15,6 +17,16 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 log.info("==== New log session was started ====")
+
+def get_songs(music_dir:str)->list[str]:
+    AUDIO_EXTENSIONS = {".mp3", ".flac", ".wav", ".aac", ".m4a",".ogg", ".opus", ".alac", ".aiff"}
+    # MUSIC_DIRECTORY = "C:\\Users\\Max\\Desktop\\music\\small"
+    music_dir = Path(music_dir)
+    music_files = (
+        f for f in music_dir.iterdir()
+        if f.is_file() and f.suffix.lower() in AUDIO_EXTENSIONS
+    )
+    return music_files
 
 def format_time(seconds: float) -> str:
     ms = int((seconds % 1) * 1000)
