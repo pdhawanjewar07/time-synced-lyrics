@@ -2,7 +2,7 @@ Notes -
 🔵 even top spotify track can be wrong, switch to official api to match from top "n" tracks
 
 Currently working on -
-🟡 automatically grab and cycle spotify auth token every 45 mins.
+🟡 ?
 
 To work on -
 🔴 apply best coding practices, normalize and optimize the codebase, add documentation
@@ -19,7 +19,7 @@ Finished working on -
 🟢 add lead lyrics utility function
 🟢 cache unsynced lyrics if found to avoid double fetch
 🟢 maybe switch from selenium to playwright?
-🟢 remove dependency on syrics, grab lyrics network request from spotify network request
 🟢 make lrclib fetch robust to network issues 
 🟢 fix lrclib
 🟢 add source - JioSaavn
+🟢 automatically grab and cycle spotify auth token every 55 mins.

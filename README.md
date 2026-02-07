@@ -22,7 +22,7 @@ pip install -r requirements.txt
 3. **set preferences in config**
 
 4. **save your auth token(s) in .env**
-    - GENIUS_ACCESS_TOKEN, SPOTIFY_AUTH
+  - GENIUS_ACCESS_TOKEN, SP_DC_TOKEN
 
 5. run **main.py**
 

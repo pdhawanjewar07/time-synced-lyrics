@@ -9,7 +9,7 @@ from utils.helpers import build_search_query, match_song_metadata, clean_string,
 
 load_dotenv()
 GENIUS_ACCESS_TOKEN = os.getenv("GENIUS_ACCESS_TOKEN")
-headers = {"Authorization": GENIUS_ACCESS_TOKEN}
+headers = {"Authorization": f"Bearer {GENIUS_ACCESS_TOKEN}"}
 
 
 def fetch_lyrics(song_path:str)->tuple:
@@ -52,6 +52,7 @@ def fetch_lyrics(song_path:str)->tuple:
         # with open("genius_response.txt", "w", encoding="utf-8") as f:
         #     for line in text:
         #         f.write(line + "\n")
+        lyrics += "\nSource: Genius"
         return (False, lyrics)
     return (False, False)
 

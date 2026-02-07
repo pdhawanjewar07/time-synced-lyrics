@@ -1,10 +1,9 @@
-from utils.helpers import save_lyrics, format_time, get_songs
+from utils.helpers import save_lyrics, format_time, get_songs, clear_profile_cache
 from config import MUSIC_DIRECTORY, OUTPUT_DIRECTORY, LYRICS_FETCH_MODE
 from pathlib import Path
 import logging
 from utils.fetch.from_all import fetch_lyrics
 import time
-from utils.playwright_driver import clear_profile_cache
 from utils.fetch.musixmatch import driver
 
 def main() -> int:

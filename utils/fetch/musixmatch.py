@@ -1,24 +1,18 @@
-from utils.helpers import extract_spotify_lyrics, build_search_query, match_song_metadata, get_songs
+from utils.helpers import extract_spotify_lyrics, build_search_query, match_song_metadata, get_songs, clear_profile_cache
 import logging
 from bs4 import BeautifulSoup
-from dotenv import load_dotenv
-import os
-# from syrics.api import Spotify
 from config import SPOTIFY_TRACK_CSS_SELECTOR
 import requests
-from utils.playwright_driver import PlaywrightDriver, clear_profile_cache
+from utils.playwright_driver import PlaywrightDriver
 import re
 import json
+from utils.spotify_auth import SpotifyAuthManager
 
 
-
-load_dotenv()
-SPOTIFY_AUTH = os.getenv("SPOTIFY_AUTH_TOKEN")
-# SPOTIFY_DC_TOKEN = os.getenv("SPOTIFY_DC_TOKEN")
 log = logging.getLogger(__name__)
-# sp = Spotify(SPOTIFY_DC_TOKEN)
 
-driver = PlaywrightDriver(headless=False)   # False only for debugging/spotify login
+auth = SpotifyAuthManager()
+driver = PlaywrightDriver(headless=False)  # False for debugging
 
 def fetch_lyrics(song_path: str) -> tuple:
     """
@@ -39,13 +33,11 @@ def fetch_lyrics(song_path: str) -> tuple:
     # print(f"______Search Query: {search_query}")
     search_url = f"https://open.spotify.com/search/{search_query}/tracks"
     # print(f"Spotify search url: {search_url}")
-    try:
-        driver.page.goto(search_url)
-        driver.page.wait_for_selector(SPOTIFY_TRACK_CSS_SELECTOR)
-        driver.page.click(SPOTIFY_TRACK_CSS_SELECTOR)
-        driver.page.wait_for_url("**/track/**")
-    except:
-        log.warning(f"Check your internet speed/connection!")
+
+    driver.page.goto(search_url)
+    driver.page.wait_for_selector(SPOTIFY_TRACK_CSS_SELECTOR)
+    driver.page.click(SPOTIFY_TRACK_CSS_SELECTOR)
+    driver.page.wait_for_url("**/track/**")
 
     spotify_track_url = driver.page.url
     # print(f"Spotify _track url: {spotify_track_url}")
@@ -59,8 +51,6 @@ def fetch_lyrics(song_path: str) -> tuple:
         tag = soup.find("meta", property=prop)
         return tag["content"] if tag else None
     
-
-    # """
     try:
         encoded_img_url = meta("og:image")
         # print(f"Encoded image url: {encoded_img_url}")
@@ -68,12 +58,11 @@ def fetch_lyrics(song_path: str) -> tuple:
         encoded_img_id = match.group(1)
         # print(f"Encoded image id: {encoded_img_id}")
     except: return (False, False)
-    # """
 
     recieved_song_title = meta("og:title")
     recieved_song_description = meta("og:description")
     recieved_song_info = f'{recieved_song_title} {recieved_song_description}'
-    flag = match_song_metadata(print_match=True, threshold=60, local_song_path=song_path, received_song_info=recieved_song_info)
+    flag = match_song_metadata(local_song_path=song_path, received_song_info=recieved_song_info, threshold=70)
     if flag is False: return (False, False)
     #/end For track comparison
 
@@ -83,8 +72,10 @@ def fetch_lyrics(song_path: str) -> tuple:
 
     lyrics_url = f"https://spclient.wg.spotify.com/color-lyrics/v2/track/{spotify_track_id}/image/https%3A%2F%2Fi.scdn.co%2Fimage%2F{encoded_img_id}?format=json&vocalRemoval=false&market=from_token"
     
+    spotify_auth_token = auth.get_token()
+    spotify_auth = f"Bearer {spotify_auth_token}"
     headers = {
-        "Authorization": SPOTIFY_AUTH,
+        "Authorization": spotify_auth,
         "App-Platform": "WebPlayer",
         "User-Agent": "Spotify/1.2.0",
     }
@@ -114,16 +105,7 @@ if __name__ == "__main__":
         print(f"{i+1}. {song_path.stem}")
         synced, unsynced =  fetch_lyrics(song_path=song_path)
         with open(f"lyrics/{song_path.stem}.lrc", "w", encoding="utf-8") as f:
-            f.write(f"{song_path.stem}\nsynced\n\n{synced}\n")
-            f.write(f"{song_path.stem}\nunsynced\n\n{unsynced}\n")
-
-    driver.close()
-    clear_profile_cache()
-
-
-
-
-
-
+            f.write(f"{song_path.stem}\nsynced\n\n{synced}")
+            f.write(f"\n{song_path.stem}\nunsynced\n\n{unsynced}")
 
 

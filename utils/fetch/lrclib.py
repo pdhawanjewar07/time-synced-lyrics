@@ -144,10 +144,10 @@ if __name__ == "__main__":
     MUSIC_DIRECTORY = "C:\\Users\\Max\\Desktop\\music\\small"
     music_files = get_songs(music_dir=MUSIC_DIRECTORY)
 
-    for i, song in enumerate(music_files):
-        print(f"{i+1}. {song}")
-        synced, unsynced =  fetch_lyrics(song_path=song)
+    for i, song_path in enumerate(music_files):
+        print(f"{i+1}. {song_path.stem}")
+        synced, unsynced =  fetch_lyrics(song_path=song_path)
         with open(f"lyrics/{i+1}.lrc", "w", encoding="utf-8") as f:
-            f.write(f"{song}\nsynced\n\n{synced}\n")
-            f.write(f"{song}\nunsynced\n\n{unsynced}\n")
+            f.write(f"{song_path.stem}\nsynced\n\n{synced}")
+            f.write(f"\n{song_path.stem}\nunsynced\n\n{unsynced}")
 

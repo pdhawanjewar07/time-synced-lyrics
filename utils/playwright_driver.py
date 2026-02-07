@@ -48,28 +48,3 @@ class PlaywrightDriver:
         log.info("==== Playwright Driver was closed ====")
 
 
-def clear_profile_cache():
-    PROFILE = Path("playwright_profile")
-    SAFE_TO_DELETE = [
-        "component_crx_cache",
-        "Crashpad",
-        "Default/Cache",
-        "Default/Code Cache",
-        "Default/DawnGraphiteCache",
-        "Default/DawnWebGPUCache",
-        "Default/GPUCache",
-        "extensions_crx_cache",
-        "GraphiteDawnCache",
-        "GrShaderCache",
-        "ShaderCache"
-    ]
-    for name in SAFE_TO_DELETE:
-        path = PROFILE / name
-        if path.exists():
-            shutil.rmtree(path)
-            # print(f"Deleted {path}")
-    log.info("==== Playwright Profile Cache was safely cleared! ====")
-    return True
-
-
-

@@ -4,6 +4,7 @@ from mutagen import File
 import logging
 from rapidfuzz import fuzz
 from pathlib import Path
+import shutil
 
 
 # Setup logging
@@ -285,7 +286,28 @@ def extract_lrclib_lyrics(json_data: list[dict]) -> tuple:
 
     return (synced_lyrics, synced_description, unsynced_lyrics, unsynced_description)
 
-
+def clear_profile_cache():
+    PROFILE = Path("playwright_profile")
+    SAFE_TO_DELETE = [
+        "component_crx_cache",
+        "Crashpad",
+        "Default/Cache",
+        "Default/Code Cache",
+        "Default/DawnGraphiteCache",
+        "Default/DawnWebGPUCache",
+        "Default/GPUCache",
+        "extensions_crx_cache",
+        "GraphiteDawnCache",
+        "GrShaderCache",
+        "ShaderCache"
+    ]
+    for name in SAFE_TO_DELETE:
+        path = PROFILE / name
+        if path.exists():
+            shutil.rmtree(path)
+            # print(f"Deleted {path}")
+    log.info("==== Playwright Profile Cache was safely cleared! ====")
+    return True
 
 
 if __name__ == "__main__":
