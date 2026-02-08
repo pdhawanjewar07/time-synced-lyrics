@@ -63,7 +63,8 @@ if __name__ == "__main__":
 
     for i, song_path in enumerate(music_files):
         print(f"{i+1}. {song_path.stem}")
-        _, unsynced_lyrics = fetch_lyrics(song_path=song_path)
+        _, unsynced = fetch_lyrics(song_path=song_path)
+        underline = "‾" * len(song_path.stem)
         with open(f"lyrics/{song_path.stem}.lrc", "w", encoding="utf-8") as f:
-            f.write(f"{song_path.stem}\n\n{unsynced_lyrics}")
+            f.write(f"{song_path.stem}\n{underline}\n{unsynced}")
     

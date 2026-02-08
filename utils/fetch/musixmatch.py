@@ -6,13 +6,15 @@ import requests
 from utils.playwright_driver import PlaywrightDriver
 import re
 import json
+import time
 from utils.spotify_auth import SpotifyAuthManager
 
+total_wasted_time = {"total_wasted_time": 0}
 
 log = logging.getLogger(__name__)
 
 auth = SpotifyAuthManager()
-driver = PlaywrightDriver(headless=False)  # False for debugging
+driver = PlaywrightDriver(headless=True)  # False for debugging
 
 def fetch_lyrics(song_path: str) -> tuple:
     """
@@ -33,6 +35,10 @@ def fetch_lyrics(song_path: str) -> tuple:
     # print(f"______Search Query: {search_query}")
     search_url = f"https://open.spotify.com/search/{search_query}/tracks"
     # print(f"Spotify search url: {search_url}")
+
+    # ---------------------------------------
+    wasted_time_start = time.time()
+    # ---------------------------------------
 
     driver.page.goto(search_url)
     driver.page.wait_for_selector(SPOTIFY_TRACK_CSS_SELECTOR)
@@ -70,6 +76,11 @@ def fetch_lyrics(song_path: str) -> tuple:
     spotify_track_id = match.group(1)
     # print(f"Spotify track id: {spotify_track_id}")
 
+    # ---------------------------------------
+    elapsed_wasted_time = time.time() - wasted_time_start
+    total_wasted_time["total_wasted_time"] += elapsed_wasted_time
+    # ---------------------------------------
+
     lyrics_url = f"https://spclient.wg.spotify.com/color-lyrics/v2/track/{spotify_track_id}/image/https%3A%2F%2Fi.scdn.co%2Fimage%2F{encoded_img_id}?format=json&vocalRemoval=false&market=from_token"
     
     spotify_auth_token = auth.get_token()
@@ -104,8 +115,11 @@ if __name__ == "__main__":
     for i, song_path in enumerate(music_files):
         print(f"{i+1}. {song_path.stem}")
         synced, unsynced =  fetch_lyrics(song_path=song_path)
+        if synced is False: print(f"synced: False")
+        if unsynced is False: print(f"unsynced: False")
+        underline = "‾" * len(song_path.stem)
         with open(f"lyrics/{song_path.stem}.lrc", "w", encoding="utf-8") as f:
-            f.write(f"{song_path.stem}\nsynced\n\n{synced}")
-            f.write(f"\n{song_path.stem}\nunsynced\n\n{unsynced}")
+            f.write(f"{song_path.stem}\n{underline}\n{synced}")
+            f.write(f"\n\n{song_path.stem}\n{underline}\n{unsynced}")
 
 

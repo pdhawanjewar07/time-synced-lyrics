@@ -128,8 +128,8 @@ def fetch_lyrics(song_path: str) -> tuple:
     cache["synced_lyrics"], cache["synced_description"], cache["unsynced_lyrics"], cache["unsynced_description"] = lyrics
 
     try:
-        sync_flag = match_song_metadata(print_match=False, threshold=70, local_song_path=song_path, received_song_info=cache["synced_description"])
-        unsync_flag = match_song_metadata(print_match=False, threshold=70, local_song_path=song_path, received_song_info=cache["unsynced_description"])
+        sync_flag = match_song_metadata(print_match=False, threshold=60, local_song_path=song_path, received_song_info=cache["synced_description"])
+        unsync_flag = match_song_metadata(print_match=False, threshold=60, local_song_path=song_path, received_song_info=cache["unsynced_description"])
         if sync_flag is False: cache["synced_lyrics"] = False
         if unsync_flag is False: cache["unsynced_lyrics"] = False
     except:
@@ -147,7 +147,10 @@ if __name__ == "__main__":
     for i, song_path in enumerate(music_files):
         print(f"{i+1}. {song_path.stem}")
         synced, unsynced =  fetch_lyrics(song_path=song_path)
-        with open(f"lyrics/{i+1}.lrc", "w", encoding="utf-8") as f:
-            f.write(f"{song_path.stem}\nsynced\n\n{synced}")
-            f.write(f"\n{song_path.stem}\nunsynced\n\n{unsynced}")
+        if synced is False: print(f"synced: False")
+        if unsynced is False: print(f"unsynced: False")
+        underline = "‾" * len(song_path.stem)
+        with open(f"lyrics/{song_path.stem}.lrc", "w", encoding="utf-8") as f:
+            f.write(f"{song_path.stem}\n{underline}\n{synced}")
+            f.write(f"\n\n{song_path.stem}\n{underline}\n{unsynced}")
 

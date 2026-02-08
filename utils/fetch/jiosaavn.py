@@ -68,7 +68,7 @@ if __name__ == "__main__":
         # song_path = Path(song_path)
         print(f"{i+1}. {song_path.stem}")
         _, unsynced =  fetch_lyrics(song_path=song_path)
-        print(unsynced)
+        if unsynced is False: print(f"unsynced: False")
 
         underline = "‾" * len(song_path.stem)
         with open(f"lyrics/{song_path.stem}.lrc", "w", encoding="utf-8") as f:

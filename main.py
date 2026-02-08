@@ -37,6 +37,10 @@ def main() -> int:
 
     success_rate = (total_found_and_saved / total_processed) * 100 if total_processed else 0.0
     elapsed_time = time.time() - start_time
+    # ------------------------------------------
+    from utils.fetch.musixmatch import total_wasted_time
+    print(f"Total wasted time: {format_time(total_wasted_time["total_wasted_time"])}")
+    # ------------------------------------------
     avg_time_per_song_found = elapsed_time / total_found_and_saved if total_found_and_saved else 0.0
     log.info("==== Summary ====")
     log.info(f"Success Rate: {success_rate:0.2f}% | {total_found_and_saved}/{total_processed}")
